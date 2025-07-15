@@ -19,7 +19,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   onCreateAccount,
 }) => {
   const handleSearch = () => {
-    // Scroll to jobs section
     const jobsSection = document.getElementById('jobs-section');
     if (jobsSection) {
       jobsSection.scrollIntoView({ behavior: 'smooth' });
@@ -32,7 +31,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="text-center mb-16 fade-in">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
             Find Your Dream{' '}
-            <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+            <span className="text-yellow-400">
               Career
             </span>
           </h1>
@@ -75,7 +74,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
               <div className="lg:col-span-3">
                 <button
                   onClick={handleSearch}
-                  className="w-full btn-primary text-xl font-bold btn-hover-lift"
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-5 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-lg"
                 >
                   Search Jobs
                 </button>
@@ -85,13 +84,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={onBrowseJobs}
-                className="btn-outline bg-white text-blue-600 hover:bg-blue-50 border-2 border-blue-600 font-bold text-lg"
+                className="bg-white text-blue-600 hover:bg-blue-50 border-2 border-white font-bold py-4 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 Browse All Jobs
               </button>
               <button
                 onClick={onCreateAccount}
-                className="btn-secondary font-bold text-lg"
+                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-bold py-4 px-8 rounded-2xl border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 Create Account
               </button>

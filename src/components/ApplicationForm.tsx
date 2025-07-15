@@ -2,18 +2,22 @@ import React, { useState } from 'react';
 import { X, Upload, User, Mail, Phone, FileText, Link, Briefcase, CheckCircle2 } from 'lucide-react';
 import { Job, FormData } from '../types';
 import { validateEmail, validatePhone, validateURL, validateFile } from '../utils/validation';
+import { getCurrentUser } from '../utils/auth';
 
 interface ApplicationFormProps {
   job: Job;
   onClose: () => void;
   onSubmit: (formData: FormData) => void;
+  onAuthRequired: () => void;
 }
 
-const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSubmit }) => {
+const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSubmit, onAuthRequired }) => {
+  const user = getCurrentUser();
+  
   const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
     phone: '',
     experience: '',
     coverLetter: '',
@@ -22,6 +26,14 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSubmi
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check if user is authenticated
+  React.useEffect(() => {
+    if (!user) {
+      onClose();
+      onAuthRequired();
+    }
+  }, [user, onClose, onAuthRequired]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -76,6 +88,10 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSubmi
       setIsSubmitting(false);
     }
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -196,6 +212,19 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSubmi
                   onChange={handleFileChange}
                   className={`input-field file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 ${errors.resumeFile ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}`}
                 />
+                {formData.resumeFile && (
+                  <div className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4 text-emerald-600" />
+                      <span className="text-sm font-medium text-emerald-800">
+                        {formData.resumeFile.name}
+                      </span>
+                      <span className="text-xs text-emerald-600">
+                        ({(formData.resumeFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <p className="text-slate-500 text-sm mt-2">Accepted formats: PDF, DOC, DOCX (Max 5MB)</p>
               {errors.resumeFile && <p className="text-red-600 text-sm mt-2 font-medium">{errors.resumeFile}</p>}

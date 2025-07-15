@@ -6,19 +6,24 @@ import ApplicationForm from './components/ApplicationForm';
 import AdminDashboard from './components/AdminDashboard';
 import JobPostingForm from './components/JobPostingForm';
 import SuccessMessage from './components/SuccessMessage';
+import AuthModal from './components/AuthModal';
 import { sampleJobs } from './data/jobs';
 import { Job, Application, FormData, JobFormData } from './types';
 import { saveApplication, saveJob, getJobs } from './utils/storage';
+import { getCurrentUser, isAdmin } from './utils/auth';
 
 function App() {
   const [currentView, setCurrentView] = useState<'jobs' | 'admin' | 'post-job'>('jobs');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showJobSuccess, setShowJobSuccess] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [user, setUser] = useState(getCurrentUser());
 
   useEffect(() => {
     // Load jobs from storage and combine with sample jobs
@@ -27,12 +32,25 @@ function App() {
     setJobs(allJobs);
   }, []);
 
+  const handleAuthSuccess = () => {
+    setUser(getCurrentUser());
+  };
+
+  const handleAuthRequired = () => {
+    setShowAuthModal(true);
+    setAuthModalMode('login');
+  };
+
   const handleJobApplication = (job: Job) => {
+    if (!user) {
+      handleAuthRequired();
+      return;
+    }
     setSelectedJob(job);
   };
 
   const handleFormSubmit = (formData: FormData) => {
-    if (!selectedJob) return;
+    if (!selectedJob || !user) return;
 
     const application: Application = {
       id: Date.now().toString(),
@@ -47,7 +65,8 @@ function App() {
       resumeFile: formData.resumeFile,
       portfolioUrl: formData.portfolioUrl,
       submittedAt: new Date().toISOString(),
-      status: 'pending'
+      status: 'pending',
+      userId: user.id
     };
 
     saveApplication(application);
@@ -61,7 +80,7 @@ function App() {
       ...jobData,
       postedDate: new Date().toISOString().split('T')[0],
       status: 'active',
-      postedBy: 'Admin'
+      postedBy: user?.id || 'admin'
     };
 
     saveJob(newJob);
@@ -83,8 +102,8 @@ function App() {
   };
 
   const handleCreateAccount = () => {
-    // This would typically open a registration modal or navigate to a signup page
-    alert('Create Account functionality would be implemented here');
+    setShowAuthModal(true);
+    setAuthModalMode('signup');
   };
 
   const filteredJobs = jobs.filter(job => {
@@ -103,7 +122,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header currentView={currentView} onViewChange={setCurrentView} />
+      <Header 
+        currentView={currentView} 
+        onViewChange={setCurrentView}
+        onAuthRequired={handleAuthRequired}
+        onAuthChange={handleAuthSuccess}
+      />
       
       {currentView === 'jobs' ? (
         <>
@@ -159,6 +183,7 @@ function App() {
           job={selectedJob}
           onClose={() => setSelectedJob(null)}
           onSubmit={handleFormSubmit}
+          onAuthRequired={handleAuthRequired}
         />
       )}
 
@@ -187,6 +212,13 @@ function App() {
           </div>
         </div>
       )}
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+        initialMode={authModalMode}
+      />
     </div>
   );
 }

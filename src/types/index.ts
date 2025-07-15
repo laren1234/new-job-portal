@@ -28,6 +28,7 @@ export interface Application {
   portfolioUrl?: string;
   submittedAt: string;
   status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
+  userId: string;
 }
 
 export interface FormData {
@@ -51,4 +52,32 @@ export interface JobFormData {
   requirements: string[];
   benefits: string[];
   deadline: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'user' | 'admin';
+  createdAt: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignUpData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }
