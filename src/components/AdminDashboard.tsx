@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Mail, Phone, Calendar, Download, Trash2, Eye, CheckCircle, XCircle, Clock, TrendingUp, Users, Building2, Edit, MoreVertical, Briefcase, Filter, SortAsc, SortDesc } from 'lucide-react';
+import { FileText, Mail, Phone, Calendar, Download, Trash2, Eye, CheckCircle, XCircle, Clock, TrendingUp, Users, Building2, Edit, MoreVertical, Briefcase, Filter, SortAsc, SortDesc, FileDown, Database } from 'lucide-react';
 import { Application, Job } from '../types';
 import { getApplications, updateApplicationStatus, deleteApplication, getJobs, deleteJob, updateJob } from '../utils/storage';
 import { getCurrentUser, isAdmin } from '../utils/auth';
 import { downloadResume } from '../utils/fileUtils';
+import { exportApplicationsCSV, exportJobsCSV, exportFilteredApplicationsCSV, exportAllData } from '../utils/csvExport';
 
 const AdminDashboard: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -68,6 +69,21 @@ const AdminDashboard: React.FC = () => {
     );
   };
 
+  const handleExportApplications = () => {
+    if (statusFilter || jobFilter) {
+      exportFilteredApplicationsCSV(filteredApplications, { status: statusFilter, job: jobFilter });
+    } else {
+      exportApplicationsCSV(applications);
+    }
+  };
+
+  const handleExportJobs = () => {
+    exportJobsCSV(jobs);
+  };
+
+  const handleExportAll = () => {
+    exportAllData(applications, jobs);
+  };
   const getStatusIcon = (status: Application['status']) => {
     switch (status) {
       case 'pending':
@@ -234,7 +250,8 @@ const AdminDashboard: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="card mb-8">
-        <div className="flex border-b border-slate-200">
+        <div className="flex justify-between items-center border-b border-slate-200">
+          <div className="flex">
           <button
             onClick={() => setActiveTab('applications')}
             className={`px-6 py-4 font-medium transition-colors ${
@@ -255,6 +272,39 @@ const AdminDashboard: React.FC = () => {
           >
             Job Postings ({stats.totalJobs})
           </button>
+          </div>
+          
+          {/* Export Buttons */}
+          <div className="flex items-center space-x-2 px-6 py-2">
+            {activeTab === 'applications' ? (
+              <button
+                onClick={handleExportApplications}
+                className="flex items-center space-x-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-colors font-medium"
+                title="Export Applications to CSV"
+              >
+                <FileDown className="h-4 w-4" />
+                <span>Export CSV</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleExportJobs}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200 transition-colors font-medium"
+                title="Export Jobs to CSV"
+              >
+                <FileDown className="h-4 w-4" />
+                <span>Export CSV</span>
+              </button>
+            )}
+            
+            <button
+              onClick={handleExportAll}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200 transition-colors font-medium"
+              title="Export All Data"
+            >
+              <Database className="h-4 w-4" />
+              <span>Export All</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -268,6 +318,14 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-lg font-semibold text-slate-900">Filter & Sort Applications</h3>
               </div>
               <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleExportApplications}
+                  className="flex items-center space-x-2 px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors text-sm font-medium"
+                  title="Export Filtered Results"
+                >
+                  <FileDown className="h-4 w-4" />
+                  <span>Export</span>
+                </button>
                 <button
                   onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
                   className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
